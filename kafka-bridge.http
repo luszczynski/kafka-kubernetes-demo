@@ -1,0 +1,46 @@
+### Produce message
+
+POST http://kafka-bridge-kafka-demo.apps.cluster-brasilia-9b97.brasilia-9b97.sandbox1457.opentlc.com/topics/topic-bridge
+content-type: application/vnd.kafka.json.v2+json
+
+{
+    "records": [
+        {
+            "key": "my-key",
+            "value": "100"
+        },
+        {
+            "key": "my-key",
+            "value": "200"
+        }
+    ]
+}
+
+### Create consumer group my-consumer-group
+
+POST http://kafka-bridge-kafka-demo.apps.cluster-brasilia-9b97.brasilia-9b97.sandbox1457.opentlc.com/consumers/my-group
+content-type: application/vnd.kafka.v2+json
+
+{
+    "name": "my-consumer",
+    "format": "json",
+    "auto.offset.reset": "earliest",
+    "enable.auto.commit": false
+}
+
+### Subscribe to topic 
+
+POST http://kafka-bridge-kafka-demo.apps.cluster-brasilia-9b97.brasilia-9b97.sandbox1457.opentlc.com/consumers/my-group/instances/my-consumer/subscription
+content-type: application/vnd.kafka.v2+json
+
+{
+    "topics": [
+        "topic-bridge",
+        "my-topic-connect"
+    ]
+}
+
+### Consume messages
+
+http://kafka-bridge-kafka-demo.apps.cluster-brasilia-9b97.brasilia-9b97.sandbox1457.opentlc.com/consumers/my-group/instances/my-consumer/records
+accept: application/vnd.kafka.json.v2+json

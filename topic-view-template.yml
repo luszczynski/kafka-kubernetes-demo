@@ -1,0 +1,106 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: topic-view
+  labels:
+    app: topic-view
+  annotations:
+    openshift.io/display-name: "Topic View Template"
+    openshift.io/provider-display-name: "Red Hat, Inc."
+    description: "Visual Tool for Kafka Brokers"
+    tags: "kafka,amq-streams"
+    version: "1.0"
+message: |-
+  Topic View is now deployed to ${NAMESPACE}
+parameters:
+- name: NAMESPACE
+  displayName: Namespace
+  required: true
+  description: Namespace in which the prometheus-operator is installed.
+- name: KAFKA_BROKER
+  displayName: Kafka Broker
+  value: 'my-cluster-kafka-bootstrap:9092'
+  required: true
+  description: The broker to connect to
+- name: SUBDOMAIN
+  displayName: Openshift Subdomain
+  required: true
+  description: Openshift subdomain
+
+objects:
+
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: kafka-topic-view
+      app.kubernetes.io/component: kafka-topic-view
+      app.kubernetes.io/instance: kafka-topic-view
+      app.kubernetes.io/part-of: topic-view
+      app.openshift.io/runtime-version: latest
+    name: kafka-topic-view
+    namespace: ${NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: kafka-topic-view
+    template:
+      metadata:
+        labels:
+          app: kafka-topic-view
+      spec:
+        containers:
+          - name: kafka-topic-view
+            image: scholzj/kafka-topic-view:latest
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+            command:
+              - /kafka-topic-view
+              - --bootstrap-server=$(BOOTSTRAP_SERVERS)
+              - --fetch-interval=$(FETCH_INTERVAL)
+            env:
+              - name: BOOTSTRAP_SERVERS
+                value: ${KAFKA_BROKER}
+              - name: FETCH_INTERVAL
+                value: "30s"
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: kafka-topic-view
+      app.kubernetes.io/component: kafka-topic-view
+      app.kubernetes.io/instance: kafka-topic-view
+      app.kubernetes.io/part-of: topic-view
+      app.openshift.io/runtime-version: latest
+    name: kafka-topic-view
+    namespace: ${NAMESPACE}
+  spec:
+    ports:
+      - port: 8080
+        targetPort: 8080
+        name: http
+    selector:
+      app: kafka-topic-view
+
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    labels:
+      app: kafka-topic-view
+      app.kubernetes.io/component: kafka-topic-view
+      app.kubernetes.io/instance: kafka-topic-view
+      app.kubernetes.io/part-of: topic-view
+      app.openshift.io/runtime-version: latest
+    name: kafka-topic-view
+    namespace: ${NAMESPACE}
+  spec:
+    host: kafka-topic-view-${NAMESPACE}.${SUBDOMAIN}
+    port:
+      targetPort: http
+    to:
+      kind: Service
+      name: kafka-topic-view
+      weight: 100

@@ -1,0 +1,125 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: consumer-producer-template
+  labels:
+    app: consumer-producer-template
+  annotations:
+    openshift.io/display-name: "Consumer and Producer Template"
+    openshift.io/provider-display-name: "Red Hat, Inc."
+    description: "Consumer and Producer for Kafka"
+    tags: "kafka,amq-streams"
+    version: "1.0"
+message: |-
+  Consumer and Producer are now deployed to ${NAMESPACE}
+parameters:
+- name: NAMESPACE
+  displayName: Namespace
+  required: true
+  description: Namespace in which the prometheus-operator is installed.
+- name: KAFKA_BROKER
+  displayName: Kafka Broker
+  value: 'my-cluster-kafka-bootstrap:9092'
+  required: true
+  description: The broker to connect to
+- name: TOPIC
+  displayName: Topic
+  value: forth-topic
+  required: true
+  description: Kafka Topic
+- name: DELAY_MS
+  displayName: Producer Delay (ms)
+  value: "1000"
+  required: true
+  description: Producer Delay (ms)
+- name: PRODUCER_MESSAGE_COUNT
+  displayName: Producer Message Count
+  value: "10000"
+  required: true
+  description: Producer Message Count
+- name: CONSUMER_MESSAGE_COUNT
+  displayName: Consumer Message Count
+  value: "1000000"
+  required: true
+  description: Consumer Message Count
+- name: CONSUMER_GROUP_ID
+  displayName: Consumer Group ID
+  value: my-group
+  required: true
+  description: Consumer Group ID
+
+objects:
+
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: hello-world-producer
+      app.kubernetes.io/component: hello-world-producer
+      app.kubernetes.io/instance: hello-world-producer
+      app.kubernetes.io/part-of: consumer-producer
+      app.openshift.io/runtime-version: latest
+    name: hello-world-producer
+    namespace: ${NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: hello-world-producer
+    template:
+      metadata:
+        labels:
+          app: hello-world-producer
+      spec:
+        containers:
+        - name: hello-world-producer
+          image: strimzici/hello-world-producer:rhte
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: ${KAFKA_BROKER}
+            - name: TOPIC
+              value: ${TOPIC}
+            - name: DELAY_MS
+              value: ${DELAY_MS}
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: MESSAGE_COUNT
+              value: ${PRODUCER_MESSAGE_COUNT}
+
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: hello-world-consumer
+      app.kubernetes.io/component: hello-world-consumer
+      app.kubernetes.io/instance: hello-world-consumer
+      app.kubernetes.io/part-of: consumer-producer
+      app.openshift.io/runtime-version: latest
+    name: hello-world-consumer
+    namespace: ${NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: hello-world-consumer
+    template:
+      metadata:
+        labels:
+          app: hello-world-consumer
+      spec:
+        containers:
+        - name: hello-world-consumer
+          image: strimzici/hello-world-consumer:rhte
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: ${KAFKA_BROKER}
+            - name: TOPIC
+              value: ${TOPIC}
+            - name: GROUP_ID
+              value: ${CONSUMER_GROUP_ID}
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: MESSAGE_COUNT
+              value: ${CONSUMER_MESSAGE_COUNT}
