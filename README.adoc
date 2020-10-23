@@ -121,6 +121,9 @@ You can also see the Kafka cluster using the kubectl command:
 [source,bash]
 ----
 kubectl get kafka -n kafka-demo
+
+# Short name for kafka
+kubectl get k -n kafka-demo
 ----
 
 image::4-10-2020-17-01-50-PM.png[] 
@@ -706,6 +709,16 @@ image::5-10-2020-10-38-53-AM.png[]
 
 * Click on `Create`
 
+You can also see the KafkaRebalance CR using the kubectl command:
+
+[source,bash]
+----
+kubectl get kafkarebalance -n $KAFKA_NAMESPACE
+
+# Short name for kafka rebalance
+kubectl get kr -n $KAFKA_NAMESPACE
+----
+
 * Now let's see the proposal plan generate from Cruise Control. Open the KafkaRebalance CR.
 
 image::5-10-2020-10-40-47-AM.png[] 
@@ -809,6 +822,16 @@ spec:
 
 Now click on `Create`
 
+You can also see the KafkaConnect CR using the kubectl command:
+
+[source,bash]
+----
+kubectl get kafkaconnect -n $KAFKA_NAMESPACE
+
+# Short name for kafka connect
+kubectl get kc -n $KAFKA_NAMESPACE
+----
+
 Go back to the Topology View and select the Application `strimzi-my-connect-cluster`
 
 image::3-10-2020-14-52-18-PM.png[] 
@@ -850,6 +873,16 @@ spec:
 image::5-10-2020-11-23-24-AM.png[] 
 
 Click on `Create`
+
+You can also see the KafkaConnector CR using the kubectl command:
+
+[source,bash]
+----
+kubectl get kafkaconnector -n $KAFKA_NAMESPACE
+
+# Short name for kafka connector
+kubectl get kctr -n $KAFKA_NAMESPACE
+----
 
 Now on the terminal, run:
 
@@ -904,6 +937,16 @@ spec:
 And click on `Create`
 
 image::5-10-2020-11-46-11-AM.png[] 
+
+You can also see the KafkaBridge CR using the kubectl command:
+
+[source,bash]
+----
+kubectl get kafkabridge -n $KAFKA_NAMESPACE
+
+# Short name for kafka bridge
+kubectl get kb -n $KAFKA_NAMESPACE
+----
 
 In the Topology View, change application to `strimzi-my-bridge`
 
@@ -1123,6 +1166,16 @@ spec:
       config:
         checkpoints.topic.replication.factor: 1
     topicsPattern: "^forth.*"
+----
+
+You can also see the KafkaMirrorMaker2 CR using the kubectl command:
+
+[source,bash]
+----
+kubectl get kafkamirrormaker2 -n $KAFKA_NAMESPACE
+
+# Short name for kafka mirror maker 2
+kubectl get kmm2 -n $KAFKA_NAMESPACE
 ----
 
 Go to the topology view and choose the application `strimzi-my-mirror-maker`
